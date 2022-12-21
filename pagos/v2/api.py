@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
-from rest_framework.throttling import BaseThrottle
+from rest_framework.throttling import BaseThrottle, UserRateThrottle
+# ThrottleHistory
 from pagos.models import Services, ExpiredPayments, PaymentUser
 from rest_framework import viewsets, permissions
 from .serializers import ServicesSerializer, ExpiredPaymentsSerializer, PaymentUserSerializer
@@ -12,28 +13,19 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 
-class DailyThrottle(BaseThrottle):
-    def allow_request(self, request, view):
-        now = datetime.now()
-        day_start = datetime(now.year, now.month, now.day, 0, 0, 0)
-        day_end = day_start + timedelta(days=1)
+# class DailyThrottlingClass(BaseThrottle):
+#     def __init__(self):
+#         self.history = ThrottleHistory()
 
-        # Check the number of requests made by the client within the past day
-        num_requests = Request.objects.filter(
-            client=request.client.id,
-            created_at__gte=day_start,
-            created_at__lt=day_end
-        ).count()
-
-        if num_requests < 2000:
-            return self.throttle_success()
-        else:
-            return self.throttle_failure()
-
+#     def allow_request(self, request, view):
+#         return self.history.check(self.get_ident(request), 1000, 86400)
+class DailyThrottlingClass(UserRateThrottle):
+	rate = '2000/day'
+	scope = 'days'
 
 class ServicesView(APIView):
 	
-	throttle_classes = [DailyThrottle]
+	throttle_classes = [DailyThrottlingClass]
 	
 	def get_permissions(self):
 		if self.request.method == 'GET':
@@ -52,15 +44,15 @@ class ServicesView(APIView):
 
 class ExpiredPaymentsView(APIView):
 	
-	throttle_classes = [DailyThrottle]
+	throttle_classes = [DailyThrottlingClass]
 
-	def get_permissions(self):
-		if self.request.method == 'GET':
-			return [IsAuthenticated()]
-		elif self.request.method == 'POST':
-			return [IsAdminUser()]
-		else:
-			return [IsAuthenticated()]
+	# def get_permissions(self):
+	# 	if self.request.method == 'GET':
+	# 		return [IsAuthenticated()]
+	# 	elif self.request.method == 'POST':
+	# 		return [IsAdminUser()]
+	# 	else:
+	# 		return [IsAuthenticated()]
 
 
 	def get(self, request):
