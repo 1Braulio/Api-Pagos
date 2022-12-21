@@ -19,6 +19,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 #     def allow_request(self, request, view):
 #         return self.history.check(self.get_ident(request), 1000, 86400)
+
 class DailyThrottlingClass(UserRateThrottle):
 	rate = '2000/day'
 	scope = 'days'
@@ -46,13 +47,13 @@ class ExpiredPaymentsView(APIView):
 	
 	throttle_classes = [DailyThrottlingClass]
 
-	# def get_permissions(self):
-	# 	if self.request.method == 'GET':
-	# 		return [IsAuthenticated()]
-	# 	elif self.request.method == 'POST':
-	# 		return [IsAdminUser()]
-	# 	else:
-	# 		return [IsAuthenticated()]
+	def get_permissions(self):
+		if self.request.method == 'GET':
+			return [IsAuthenticated()]
+		elif self.request.method == 'POST':
+			return [IsAdminUser()]
+		else:
+			return [IsAuthenticated()]
 
 
 	def get(self, request):
