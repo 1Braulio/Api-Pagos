@@ -25,7 +25,7 @@ class DailyThrottle(BaseThrottle):
             created_at__lt=day_end
         ).count()
 
-        if num_requests < 1000:
+        if num_requests < 2000:
             return self.throttle_success()
         else:
             return self.throttle_failure()
