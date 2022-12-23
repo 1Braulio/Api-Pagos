@@ -39,7 +39,8 @@ class PaymentUser(models.Model):
     def save(self, *args, **kwargs):
         
         if self.expiration_date < self.payment_date:
-            ExpiredPayments.create(payment_user_id = self.user_id,  penalty_fee_amount = 10)
+            expired_payment = ExpiredPayments(payment_user_id = self.user_id,  penalty_fee_amount = 10)
+            expired_payment.save()
 
         super().save(*args, **kwargs)
     

@@ -42,6 +42,15 @@ class ServicesView(APIView):
 		serializer = ServicesSerializer(services, many=True)
 		return Response(serializer.data)
 
+	def post(self, request, *args, **kwargs):
+		serializer = ServicesSerializer(data=request.data)
+
+		if serializer.is_valid():
+			serializer.save()
+			return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+
+		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ExpiredPaymentsView(APIView):
 	
@@ -71,6 +80,7 @@ class ExpiredPaymentsView(APIView):
 
 		return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class PaymentUserViewSet(viewsets.ModelViewSet):
 	queryset = PaymentUser.objects.all()
 	pagination_class = StandardResultsSetPagination
@@ -81,7 +91,7 @@ class PaymentUserViewSet(viewsets.ModelViewSet):
 	throttle_scope = 'get'
 
 	def get_serializer_class(self):
-		return ExpiredPaymentsSerializer
+		return PaymentUserSerializer
 
 	def get_permissions(self):
 		if self.action in ['list', 'retrieve', 'create']:
@@ -103,9 +113,9 @@ class PaymentUserViewSet(viewsets.ModelViewSet):
 
 	def create(self, request):
 		if isinstance(request.data, list):
-			serializer = PagosSerializer(data=request.data, many = True)
+			serializer = PaymentUserSerializer(data=request.data, many = True)
 		else:
-			serializer = PagosSerializer(data=request.data)
+			serializer = PaymentUserSerializer(data=request.data)
 
 		if serializer.is_valid():
 			serializer.save()
@@ -114,13 +124,13 @@ class PaymentUserViewSet(viewsets.ModelViewSet):
 
 	def retrieve(self, request, pk=None):
 		todo = get_object_or_404(self.queryset, pk=pk)
-		serializer = PagosSerializer(todo)
+		serializer = PaymentUserSerializer(todo)
 		return Response(serializer.data)
 
 
 	def update(self, request, pk=None):
 		todo = get_object_or_404(self.queryset, pk=pk)
-		serializer = TodoSerializer(todo, data=request.data)
+		serializer = PaymentUserSerializer(todo, data=request.data)
 
 		if serializer.is_valid():
 			serializer.save()
@@ -130,7 +140,7 @@ class PaymentUserViewSet(viewsets.ModelViewSet):
 
 	def partial_update(self, request, pk=None):
 		todo = get_object_or_404(self.queryset, pk=pk)
-		serializer = TodoSerializer(todo, data=request.data, partial=True)
+		serializer = PaymentUserSerializer(todo, data=request.data, partial=True)
 		if serializer.is_valid():
 			serializer.save()
 			return Response(serializer.data, status=status.HTTP_201_CREATED)
